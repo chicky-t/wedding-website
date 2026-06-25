@@ -1492,21 +1492,21 @@
       <div class="form-row">
         <div class="form-group">
           <label>First Name</label>
-          <input type="text" id="fname" placeholder="Your first name">
+          <input type="text" id="fname" name="First Name" placeholder="Your first name">
         </div>
         <div class="form-group">
           <label>Last Name</label>
-          <input type="text" id="lname" placeholder="Your last name">
+          <input type="text" id="lname" name="Last Name" placeholder="Your last name">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>Email</label>
-          <input type="email" id="email" placeholder="your@email.com">
+          <input type="email" id="email" name="email" placeholder="your@email.com">
         </div>
         <div class="form-group">
           <label>Attending?</label>
-          <select id="attending">
+          <select id="attending" name="Attending">
             <option value="">Select one</option>
             <option>Joyfully accepts</option>
             <option>Regretfully declines</option>
@@ -1516,20 +1516,20 @@
       <div class="form-row">
         <div class="form-group">
           <label>Number of Guests</label>
-          <select id="guests">
+          <select id="guests" name="Number of Guests">
             <option value="1">1, just me</option>
             <option value="2">2, bringing a guest</option>
           </select>
         </div>
         <div class="form-group">
           <label>Dietary Requirements</label>
-          <input type="text" id="dietary" placeholder="Vegan, gluten-free, etc.">
+          <input type="text" id="dietary" name="Dietary Requirements" placeholder="Vegan, gluten-free, etc.">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group form-full">
           <label>Message to the Couple (optional)</label>
-          <textarea id="message" placeholder="Share a wish, a memory, or just say hello…"></textarea>
+          <textarea id="message" name="Message" placeholder="Share a wish, a memory, or just say hello…"></textarea>
         </div>
       </div>
       <button class="rsvp-btn" onclick="submitRsvp()">Send My RSVP</button>
@@ -1591,18 +1591,51 @@
     const lname = document.getElementById('lname').value.trim();
     const attending = document.getElementById('attending').value;
     const email = document.getElementById('email').value.trim();
+    const guests = document.getElementById('guests').value;
+    const dietary = document.getElementById('dietary').value.trim();
+    const message = document.getElementById('message').value.trim();
 
     if (!fname || !lname || !attending || !email) {
       alert('Please fill in your name, email, and RSVP response.');
       return;
     }
 
-    document.querySelector('.rsvp-form form-row') && null;
-    document.getElementById('rsvp-success').style.display = 'block';
-    document.querySelector('.rsvp-btn').style.display = 'none';
+    const btn = document.querySelector('.rsvp-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
 
-    // Scroll to success message
-    document.getElementById('rsvp-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const payload = {
+      'First Name': fname,
+      'Last Name': lname,
+      'email': email,
+      'Attending': attending,
+      'Number of Guests': guests,
+      'Dietary Requirements': dietary || 'None',
+      'Message': message || '(none)',
+      '_subject': 'RSVP: ' + fname + ' ' + lname
+    };
+
+    fetch('https://formspree.io/f/maqgedke', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (response) {
+      if (response.ok) {
+        document.getElementById('rsvp-success').style.display = 'block';
+        btn.style.display = 'none';
+        document.getElementById('rsvp-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Send My RSVP';
+        alert('Something went wrong sending your RSVP. Please try again, or email us directly.');
+      }
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send My RSVP';
+      alert('Something went wrong sending your RSVP. Please check your connection and try again.');
+    });
   }
 </script>
 </body>
