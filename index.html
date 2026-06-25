@@ -255,9 +255,21 @@
 
   /* ── EVENT DETAILS ── */
   #details { }
-  #details .section-title { color: var(--offwhite); }
-  #details .body-text { color: rgba(250,249,246,0.5); }
-  #details .section-label { color: var(--gold); }
+  #details .section-title {
+    color: var(--offwhite);
+    font-weight: 400;
+  }
+  #details .body-text {
+    color: rgba(250,249,246,0.72);
+    font-weight: 400;
+  }
+  #details .section-label {
+    color: var(--gold-light);
+    font-size: 0.74rem;
+    font-weight: 400;
+    letter-spacing: 0.32em;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.45);
+  }
 
   .events-grid {
     display: grid;
@@ -1186,7 +1198,7 @@
     <p class="section-label reveal">The Celebration</p>
     <div class="gold-rule reveal"></div>
     <h2 class="section-title reveal">December 14, <em>2026</em></h2>
-    <p class="body-text reveal" style="color:rgba(250,249,246,0.45);">We are getting married at Cavalli Estate in Somerset West, a breathtaking wine estate nestled against the Helderberg Mountains, just 40 minutes from Cape Town.</p>
+    <p class="body-text reveal">We are getting married at Cavalli Estate in Somerset West, a breathtaking wine estate nestled against the Helderberg Mountains, just 40 minutes from Cape Town.</p>
 
     <div class="events-grid reveal reveal-delay-1">
       <div class="event-card">
@@ -1543,16 +1555,11 @@
         <p class="registry-desc">Home and lifestyle gifts for our new life together.</p>
         <span class="registry-link">View Registry →</span>
       </a>
-      <div class="registry-card reveal reveal-delay-2">
-        <p class="registry-store">Coming Soon</p>
-        <p class="registry-desc">Kitchen, dining, and entertaining essentials.</p>
-        <span class="registry-link">Coming Soon</span>
-      </div>
-      <div class="registry-card reveal reveal-delay-3">
+      <a class="registry-card reveal reveal-delay-3" href="https://www.honeyfund.com/site/sprinkle-basson-12-14-2020" target="_blank" rel="noopener">
         <p class="registry-store">Honeymoon Fund</p>
         <p class="registry-desc">Help us experience the world together as newlyweds.</p>
         <span class="registry-link">Contribute →</span>
-      </div>
+      </a>
     </div>
   </div>
 </section>
