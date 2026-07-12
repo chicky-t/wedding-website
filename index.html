@@ -551,6 +551,51 @@
 
   .form-full { grid-column: 1 / -1; }
 
+  .form-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+
+  .guest-block {
+    padding: 1.5rem 0 0.25rem;
+    border-top: 0.5px solid var(--sage-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .guest-block-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--sage-dark);
+    margin-bottom: 1.1rem;
+  }
+
+  .guest-child-check {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+  }
+
+  .guest-child-check input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    accent-color: var(--sage-dark);
+  }
+
+  .guest-child-check label {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
   .rsvp-btn {
     display: block;
     width: 100%;
@@ -1532,30 +1577,23 @@
           </select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Number of Guests</label>
+      <div class="form-row attending-only">
+        <div class="form-group form-full">
+          <label>Total Number of Guests in Your Party</label>
           <select id="guests" name="Number of Guests">
             <option value="1">1, just me</option>
-            <option value="2">2, bringing a guest</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label>Bringing Children?</label>
-          <select id="children" name="Bringing Children">
-            <option value="No children">No children</option>
-            <option value="1 child">1 child</option>
-            <option value="2 children">2 children</option>
-            <option value="3+ children">3 or more children</option>
-          </select>
+          <p class="form-hint">Please include yourself, and any children joining you.</p>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group form-full">
-          <label>Dietary Requirements</label>
-          <input type="text" id="dietary" name="Dietary Requirements" placeholder="Vegan, gluten-free, etc.">
-        </div>
-      </div>
+
+      <div id="guest-blocks" class="attending-only"></div>
+
       <div class="form-row">
         <div class="form-group form-full">
           <label>Message to the Couple (optional)</label>
@@ -1615,6 +1653,90 @@
 
   reveals.forEach(el => observer.observe(el));
 
+  // RSVP guest blocks
+  const MEAL_OPTIONS = ['Vegetable Risotto', 'Line Caught White Fish', 'Beef Fillet'];
+
+  function renderGuestBlocks() {
+    const count = parseInt(document.getElementById('guests').value, 10);
+    const wrap = document.getElementById('guest-blocks');
+    const existing = {};
+
+    // Preserve anything already typed
+    for (let i = 1; i <= 6; i++) {
+      const n = document.getElementById('guest-name-' + i);
+      const m = document.getElementById('guest-meal-' + i);
+      const c = document.getElementById('guest-child-' + i);
+      const d = document.getElementById('guest-diet-' + i);
+      if (n) existing[i] = {
+        name: n.value,
+        meal: m ? m.value : '',
+        child: c ? c.checked : false,
+        diet: d ? d.value : ''
+      };
+    }
+
+    let html = '';
+    for (let i = 1; i <= count; i++) {
+      const prev = existing[i] || { name: '', meal: '', child: false, diet: '' };
+      const label = i === 1 ? 'Guest 1 (you)' : 'Guest ' + i;
+      let opts = '<option value="">Select a meal</option>';
+      MEAL_OPTIONS.forEach(function (o) {
+        opts += '<option' + (prev.meal === o ? ' selected' : '') + '>' + o + '</option>';
+      });
+      html +=
+        '<div class="guest-block">' +
+          '<p class="guest-block-label">' + label + '</p>' +
+          '<div class="form-row">' +
+            '<div class="form-group">' +
+              '<label>Full Name</label>' +
+              '<input type="text" id="guest-name-' + i + '" placeholder="Guest full name" value="' + prev.name.replace(/"/g, '&quot;') + '">' +
+              '<div class="guest-child-check">' +
+                '<input type="checkbox" id="guest-child-' + i + '"' + (prev.child ? ' checked' : '') + '>' +
+                '<label for="guest-child-' + i + '">This guest is a child</label>' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label>Meal Choice</label>' +
+              '<select id="guest-meal-' + i + '">' + opts + '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div class="form-row">' +
+            '<div class="form-group form-full">' +
+              '<label>Dietary Restrictions or Allergies</label>' +
+              '<input type="text" id="guest-diet-' + i + '" placeholder="Nut allergy, gluten-free, shellfish, etc. Leave blank if none." value="' + prev.diet.replace(/"/g, '&quot;') + '">' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
+    wrap.innerHTML = html;
+
+    // Keep guest 1 in step with the name fields above
+    syncPrimaryGuestName();
+  }
+
+  function syncPrimaryGuestName() {
+    const first = document.getElementById('guest-name-1');
+    if (!first || first.value.trim()) return;
+    const fn = document.getElementById('fname').value.trim();
+    const ln = document.getElementById('lname').value.trim();
+    if (fn || ln) first.value = (fn + ' ' + ln).trim();
+  }
+
+  document.getElementById('guests').addEventListener('change', renderGuestBlocks);
+  document.getElementById('fname').addEventListener('blur', syncPrimaryGuestName);
+  document.getElementById('lname').addEventListener('blur', syncPrimaryGuestName);
+
+  function toggleAttendingFields() {
+    const declining = document.getElementById('attending').value === 'Regretfully declines';
+    document.querySelectorAll('.attending-only').forEach(function (el) {
+      el.style.display = declining ? 'none' : '';
+    });
+  }
+  document.getElementById('attending').addEventListener('change', toggleAttendingFields);
+
+  renderGuestBlocks();
+  toggleAttendingFields();
+
   // RSVP form
   function submitRsvp() {
     const fname = document.getElementById('fname').value.trim();
@@ -1622,13 +1744,36 @@
     const attending = document.getElementById('attending').value;
     const email = document.getElementById('email').value.trim();
     const guests = document.getElementById('guests').value;
-    const children = document.getElementById('children').value;
-    const dietary = document.getElementById('dietary').value.trim();
     const message = document.getElementById('message').value.trim();
 
     if (!fname || !lname || !attending || !email) {
       alert('Please fill in your name, email, and RSVP response.');
       return;
+    }
+
+    const attendingYes = attending === 'Joyfully accepts';
+    const count = parseInt(guests, 10);
+    const party = [];
+    const diets = [];
+
+    if (attendingYes) {
+      for (let i = 1; i <= count; i++) {
+        const name = document.getElementById('guest-name-' + i).value.trim();
+        const meal = document.getElementById('guest-meal-' + i).value;
+        const child = document.getElementById('guest-child-' + i).checked;
+        const diet = document.getElementById('guest-diet-' + i).value.trim();
+
+        if (!name) {
+          alert('Please give us the name of each guest in your party.');
+          return;
+        }
+        if (!meal) {
+          alert('Please choose a meal for each guest in your party.');
+          return;
+        }
+        party.push(name + ' — ' + meal + (child ? ' (child)' : ''));
+        if (diet) diets.push(name + ': ' + diet);
+      }
     }
 
     const btn = document.querySelector('.rsvp-btn');
@@ -1640,9 +1785,12 @@
       'Last Name': lname,
       'email': email,
       'Attending': attending,
-      'Number of Guests': guests,
-      'Bringing Children': children,
-      'Dietary Requirements': dietary || 'None',
+      'Number of Guests': attendingYes ? guests : '0',
+      'Party & Meal Choices': attendingYes ? party.join('\n') : '(not attending)',
+      'Children in Party': attendingYes
+        ? String(party.filter(function (p) { return p.indexOf('(child)') !== -1; }).length)
+        : '0',
+      'Dietary Restrictions': attendingYes ? (diets.length ? diets.join('\n') : 'None') : 'N/A',
       'Message': message || '(none)',
       '_subject': 'RSVP: ' + fname + ' ' + lname
     };
