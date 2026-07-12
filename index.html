@@ -577,14 +577,41 @@
   .guest-child-check {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.6rem;
     margin-top: 0.9rem;
   }
 
   .guest-child-check input[type="checkbox"] {
-    width: auto;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    min-width: 15px;
     margin: 0;
-    accent-color: var(--sage-dark);
+    padding: 0;
+    border: 0.5px solid var(--sage-dark);
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .guest-child-check input[type="checkbox"]:checked {
+    background: var(--sage-dark);
+    border-color: var(--sage-dark);
+  }
+
+  .guest-child-check input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4.5px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--warm-white);
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
   }
 
   .guest-child-check label {
@@ -1655,6 +1682,7 @@
 
   // RSVP guest blocks
   const MEAL_OPTIONS = ['Vegetable Risotto', 'Line Caught White Fish', 'Beef Fillet'];
+  let guestOneTouched = false;
 
   function renderGuestBlocks() {
     const count = parseInt(document.getElementById('guests').value, 10);
@@ -1710,21 +1738,33 @@
     }
     wrap.innerHTML = html;
 
+    // Restore the "user typed here" flag and keep tracking it
+    const first = document.getElementById('guest-name-1');
+    if (first) {
+      if (guestOneTouched) first.dataset.touched = 'true';
+      first.addEventListener('input', function () {
+        guestOneTouched = true;
+        first.dataset.touched = 'true';
+      });
+    }
+
     // Keep guest 1 in step with the name fields above
     syncPrimaryGuestName();
   }
 
   function syncPrimaryGuestName() {
     const first = document.getElementById('guest-name-1');
-    if (!first || first.value.trim()) return;
+    if (!first) return;
+    // Stop syncing once the guest has typed their own value into this field
+    if (first.dataset.touched === 'true') return;
     const fn = document.getElementById('fname').value.trim();
     const ln = document.getElementById('lname').value.trim();
-    if (fn || ln) first.value = (fn + ' ' + ln).trim();
+    first.value = (fn + ' ' + ln).trim();
   }
 
   document.getElementById('guests').addEventListener('change', renderGuestBlocks);
-  document.getElementById('fname').addEventListener('blur', syncPrimaryGuestName);
-  document.getElementById('lname').addEventListener('blur', syncPrimaryGuestName);
+  document.getElementById('fname').addEventListener('input', syncPrimaryGuestName);
+  document.getElementById('lname').addEventListener('input', syncPrimaryGuestName);
 
   function toggleAttendingFields() {
     const declining = document.getElementById('attending').value === 'Regretfully declines';
